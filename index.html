@@ -311,6 +311,29 @@
       margin-top: 8px;
     }
 
+    .status.success-pulse {
+      color: var(--accent-dark);
+      font-weight: 700;
+    }
+
+    .feedback-pulse {
+      animation: feedbackPulse 160ms ease-out;
+    }
+
+    @keyframes feedbackPulse {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.04);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
     .status.error {
       color: var(--warn);
       font-weight: 700;
@@ -728,8 +751,34 @@
     }
 
     function triggerHapticFeedback() {
-      if (!navigator.vibrate) return;
-      navigator.vibrate(35);
+      if (navigator.vibrate) navigator.vibrate(45);
+      playEntryTick();
+      els.statusText.classList.remove("success-pulse");
+      void els.statusText.offsetWidth;
+      els.statusText.classList.add("success-pulse");
+      window.setTimeout(() => els.statusText.classList.remove("success-pulse"), 220);
+    }
+
+    function playEntryTick() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const context = new AudioContext();
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(720, context.currentTime);
+        gain.gain.setValueAtTime(0.001, context.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.06, context.currentTime + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.08);
+        oscillator.connect(gain);
+        gain.connect(context.destination);
+        oscillator.start();
+        oscillator.stop(context.currentTime + 0.09);
+        oscillator.onended = () => context.close();
+      } catch {
+        // Some browsers block generated audio; visual feedback still remains.
+      }
     }
 
     function updateSelectedMarkButton() {
