@@ -562,7 +562,7 @@
       countedThisSheet: false,
       activeTab: "scoring"
     };
-    let selectedMarkIndex = MARK_VALUES.indexOf(7);
+    let selectedMarkIndex = null;
 
     const els = {
       testSelector: document.getElementById("testSelector"),
@@ -728,7 +728,7 @@
 
     function updateSelectedMarkButton() {
       els.markButtons.querySelectorAll(".mark-button").forEach((button) => {
-        const selected = Number(button.dataset.markIndex) === selectedMarkIndex;
+        const selected = selectedMarkIndex !== null && Number(button.dataset.markIndex) === selectedMarkIndex;
         button.classList.toggle("selected", selected);
         button.setAttribute("aria-current", selected ? "true" : "false");
       });
@@ -750,7 +750,8 @@
     }
 
     function moveSelectedMark(direction) {
-      selectedMarkIndex = Math.min(MARK_VALUES.length - 1, Math.max(0, selectedMarkIndex + direction));
+      if (selectedMarkIndex === null) selectedMarkIndex = MARK_VALUES.indexOf(7);
+      else selectedMarkIndex = Math.min(MARK_VALUES.length - 1, Math.max(0, selectedMarkIndex + direction));
       updateSelectedMarkButton();
       scrollSelectedMarkIntoView();
       setStatus(`Selected score ${formatMark(MARK_VALUES[selectedMarkIndex])}. Press Enter to log it.`);
@@ -768,6 +769,8 @@
         moveSelectedMark(1);
       } else if (event.key === "Enter") {
         event.preventDefault();
+        if (selectedMarkIndex === null) selectedMarkIndex = MARK_VALUES.indexOf(7);
+        updateSelectedMarkButton();
         addMark(MARK_VALUES[selectedMarkIndex], "keyboard");
       }
     }
@@ -871,7 +874,8 @@
       els.awardedTotal.textContent = formatOne(total.awarded);
       els.errorsTotal.textContent = `-${formatOne(total.deductions)}`;
       els.countTotal.textContent = formatOne(total.count);
-      els.percentage.textContent = `${total.percentage.toFixed(3)}%`;
+      const completed = state.rows.filter((row) => row.mark !== null && row.mark !== undefined).length;
+      els.percentage.textContent = state.rows.length && completed === state.rows.length ? `${total.percentage.toFixed(3)}%` : "--";
       els.deductionInput.value = state.deductions ? state.deductions : "";
       els.deductionDisplay.value = `-${formatOne(total.deductions)}`;
     }
