@@ -720,10 +720,16 @@
       incrementUsageCounter();
       state.rows[index].mark = Number(value);
       state.history.push({ index, previousMark: null, source });
+      triggerHapticFeedback();
       setStatus(`Movement ${index + 1}: ${formatMark(value)}`);
       render();
       saveState();
       return true;
+    }
+
+    function triggerHapticFeedback() {
+      if (!navigator.vibrate) return;
+      navigator.vibrate(35);
     }
 
     function updateSelectedMarkButton() {
