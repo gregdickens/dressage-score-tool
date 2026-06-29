@@ -6,549 +6,665 @@
   <title>Dressage Score Tool</title>
   <style>
     :root {
-      color-scheme: light;
-      --ink: #20211f;
-      --muted: #666a63;
-      --line: #d8ddd4;
-      --panel: #fbfcf8;
-      --soft: #eef3e9;
-      --accent: #2f6f5e;
-      --accent-dark: #214f43;
-      --warn: #a24b2c;
-      --gold: #b78b22;
-      --white: #ffffff;
-      --shadow: 0 14px 32px rgba(31, 42, 35, 0.12);
+      --bg: #f6f4ef;
+      --panel: #ffffff;
+      --ink: #202326;
+      --muted: #646b73;
+      --line: #d9d6ce;
+      --accent: #0f766e;
+      --accent-dark: #0b5f59;
+      --warn: #b42318;
+      --soft: #e8f3f1;
+      --shadow: 0 10px 26px rgba(30, 34, 37, 0.08);
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
       color: var(--ink);
-      background: linear-gradient(180deg, rgba(47, 111, 94, 0.08), transparent 34%), #f6f7f2;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.35;
     }
 
-    button, input, select { font: inherit; }
-    button { border: 0; cursor: pointer; }
+    button,
+    input,
+    select {
+      font: inherit;
+    }
 
     .app {
-      width: min(1180px, calc(100% - 28px));
+      width: min(1120px, 100%);
       margin: 0 auto;
-      padding: 24px 0 36px;
+      padding: 12px;
     }
 
-    header {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      align-items: end;
-      gap: 18px;
-      padding: 12px 0 22px;
-      border-bottom: 1px solid var(--line);
+    .ad-slot {
+      min-height: 72px;
+      border: 1px dashed #c9c3b8;
+      background: #ebe7de;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #8b8174;
+      font-size: 0.78rem;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 0.84rem;
     }
 
     h1 {
       margin: 0;
-      font-size: clamp(1.8rem, 4vw, 3.2rem);
-      line-height: 1;
+      font-size: clamp(1.35rem, 4vw, 2rem);
       letter-spacing: 0;
+      color: var(--ink);
     }
 
-    .subhead {
-      margin: 9px 0 0;
-      color: var(--muted);
-      font-size: 1rem;
-      max-width: 760px;
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 10px;
     }
 
-    .credit {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 0.82rem;
+    .tab-button {
+      min-height: 44px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      border-radius: 8px;
+      cursor: pointer;
       font-weight: 700;
     }
 
-    .status { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      min-height: 34px;
-      padding: 0 12px;
-      border: 1px solid var(--line);
-      background: var(--white);
-      border-radius: 999px;
-      color: var(--muted);
-      white-space: nowrap;
+    .tab-button[aria-selected="true"] {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
     }
 
-    main {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 18px;
-      margin-top: 18px;
+    .tab-panel {
+      display: none;
     }
 
-    section { min-width: 0; }
+    .tab-panel.active {
+      display: block;
+    }
 
-    .toolbar, .summary, .entry, .list {
+    .surface {
       background: var(--panel);
       border: 1px solid var(--line);
       box-shadow: var(--shadow);
       border-radius: 8px;
+      padding: 12px;
     }
 
-    .entry, .toolbar { padding: 14px; display: grid; gap: 12px; }
-    .entry.primary { border-color: rgba(47, 111, 94, 0.34); background: #f7fbf7; }
-    .setup-strip { margin-bottom: 12px; }
+    .guide {
+      border: 2px solid var(--accent);
+      background: var(--soft);
+      color: var(--accent-dark);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .guide small {
+      display: block;
+      margin-top: 3px;
+      color: #315d58;
+      font-weight: 400;
+    }
+
+    .highlight {
+      outline: 3px solid rgba(15, 118, 110, 0.35);
+      outline-offset: 3px;
+    }
 
     .setup-grid {
       display: grid;
-      grid-template-columns: minmax(220px, 1fr) minmax(150px, 190px) minmax(260px, 0.9fr);
-      gap: 12px;
-      align-items: end;
-    }
-
-    .score-stack {
-      display: grid;
+      grid-template-columns: 1fr;
       gap: 10px;
+      align-items: end;
+      margin-bottom: 10px;
     }
 
-    .score-strip {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1px;
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      background: var(--line);
-    }
-
-    .score-tile {
-      min-height: 58px;
-      padding: 10px;
-      background: var(--white);
-    }
-
-    .score-tile span {
+    label {
       display: block;
       color: var(--muted);
-      font-size: 0.76rem;
+      font-size: 0.78rem;
       font-weight: 700;
-      margin-bottom: 5px;
+      margin-bottom: 4px;
     }
 
-    .score-tile strong {
-      display: block;
-      color: var(--accent-dark);
-      font-size: 1.35rem;
-      line-height: 1;
-    }
-
-    .row { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; }
-    .field { display: grid; gap: 6px; min-width: 130px; flex: 1; }
-
-    label { color: var(--muted); font-size: 0.86rem; font-weight: 700; }
-
-    input, select {
+    select,
+    input {
       width: 100%;
-      min-height: 42px;
+      min-height: 44px;
       border: 1px solid var(--line);
-      border-radius: 6px;
-      padding: 9px 10px;
-      background: var(--white);
+      border-radius: 8px;
+      background: #fff;
       color: var(--ink);
+      padding: 8px 10px;
     }
 
-    input[readonly] { background: #f3f4f0; }
-    input.needs-value, select.needs-value {
-      border-color: var(--warn);
-      background: #fff4ef;
-      box-shadow: 0 0 0 3px rgba(162, 75, 44, 0.14);
+    select:focus,
+    input:focus,
+    button:focus-visible {
+      outline: 3px solid rgba(15, 118, 110, 0.25);
+      outline-offset: 2px;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .summary-sticky {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: var(--bg);
+      border-bottom: 1px solid var(--line);
+      margin: 10px -12px;
+      padding: 8px 12px;
+    }
+
+    .summary-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px;
+      min-height: 68px;
+      background: #fbfaf7;
+    }
+
+    .summary-item span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .summary-item strong {
+      display: block;
+      margin-top: 5px;
+      font-size: clamp(1rem, 2.4vw, 1.35rem);
+      white-space: nowrap;
+    }
+
+    .deduction-row {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) minmax(140px, 180px);
+      gap: 10px;
+      align-items: end;
+      margin-bottom: 10px;
+    }
+
+    .action-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin: 10px 0;
+    }
+
+    .secondary-button,
+    .danger-button {
+      min-height: 44px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .danger-button {
+      border-color: #efb8b2;
+      color: var(--warn);
+    }
+
+    .progress-wrap {
+      margin: 10px 0;
+    }
+
+    .progress-text {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      margin-bottom: 6px;
     }
 
     .progress-track {
-      width: 100%;
       height: 12px;
       overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: var(--white);
+      border-radius: 99px;
+      background: #e5e1d9;
     }
 
-    .progress-fill { width: 0%; height: 100%; background: var(--accent); transition: width 0.18s ease; }
-    .completion-message { min-height: 22px; color: var(--muted); font-weight: 700; line-height: 1.4; margin-top: 7px; }
-    .completion-message.ready { color: var(--accent-dark); }
-    .completion-message.over { color: var(--warn); }
-
-    .mark-grid { display: grid; grid-template-columns: repeat(6, minmax(64px, 1fr)); gap: 8px; }
-    .mark-btn, .icon-btn, .text-btn {
-      min-height: 44px;
-      border-radius: 6px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      font-weight: 700;
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      background: var(--accent);
+      transition: width 180ms ease;
     }
 
-    .mark-btn {
-      background: var(--white);
-      color: var(--ink);
-      border: 1px solid var(--line);
-      font-size: 1.02rem;
-      touch-action: manipulation;
-      user-select: none;
-    }
-
-    .mark-btn:hover, .mark-btn:focus-visible { outline: 2px solid rgba(47, 111, 94, 0.3); background: var(--soft); }
-    .mark-btn:disabled { cursor: not-allowed; opacity: 0.48; background: #f3f4f0; }
-    .mark-btn.featured { color: var(--accent-dark); border-color: rgba(47, 111, 94, 0.28); background: #f6fbf7; }
-
-    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .icon-btn { width: 44px; padding: 0; background: var(--white); color: var(--accent-dark); border: 1px solid var(--line); position: relative; }
-    .text-btn { padding: 0 13px; background: var(--accent); color: var(--white); }
-    .text-btn.secondary { background: var(--white); color: var(--accent-dark); border: 1px solid var(--line); }
-    .text-btn.danger { background: var(--warn); }
-    .icon-btn svg { width: 20px; height: 20px; stroke-width: 2; }
-
-    [data-tooltip]::after {
-      content: attr(data-tooltip);
-      position: absolute;
-      left: 50%;
-      bottom: calc(100% + 8px);
-      transform: translateX(-50%);
-      background: #20211f;
-      color: var(--white);
-      padding: 6px 8px;
-      border-radius: 4px;
-      font-size: 0.78rem;
-      white-space: nowrap;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.16s ease;
-      z-index: 2;
-    }
-    [data-tooltip]:hover::after, [data-tooltip]:focus-visible::after { opacity: 1; }
-
-    .summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; overflow: hidden; background: var(--line); }
-    .metric { background: var(--panel); padding: 16px; min-height: 96px; }
-    .metric span { display: block; color: var(--muted); font-size: 0.82rem; font-weight: 700; margin-bottom: 9px; }
-    .metric strong { display: block; font-size: clamp(1.45rem, 4vw, 2.2rem); line-height: 1; letter-spacing: 0; }
-    .metric.highlight strong { color: var(--accent-dark); }
-
-    .list { margin-top: 18px; overflow: hidden; }
-    .list-head, .score-row {
+    .marks {
       display: grid;
-      grid-template-columns: 52px 1fr 84px 98px 92px 44px;
+      grid-template-columns: repeat(2, minmax(52px, 82px));
       gap: 8px;
-      align-items: center;
+      margin-top: 10px;
+      justify-content: start;
+      align-items: stretch;
     }
 
-    .list-head {
-      padding: 10px 12px;
-      background: var(--soft);
-      color: var(--muted);
-      font-size: 0.78rem;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-
-    .scores { display: grid; }
-    .score-row { padding: 10px 12px; border-top: 1px solid var(--line); background: var(--panel); }
-    .score-row:first-child { border-top: 0; }
-    .score-row.pending { background: #fff8ef; }
-    .score-row.current { box-shadow: inset 4px 0 0 var(--accent); }
-
-    .score-number {
-      width: 36px;
-      height: 36px;
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--white);
+    .mark-button {
+      min-height: 48px;
       border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .mark-button.common {
+      grid-column: 1 / span 2;
+      min-height: 50px;
+    }
+
+    .mark-button.compact {
+      min-height: 42px;
+      font-size: 0.9rem;
+    }
+
+    .mark-button.selected {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.22);
+    }
+
+    .mark-button:active {
+      transform: translateY(1px);
+    }
+
+    .status {
+      min-height: 22px;
       color: var(--muted);
+      font-size: 0.86rem;
+      margin-top: 8px;
+    }
+
+    .status.error {
+      color: var(--warn);
       font-weight: 700;
     }
 
-    .movement { min-width: 0; color: var(--ink); overflow-wrap: anywhere; }
-    .score-value { font-size: 1.2rem; font-weight: 800; color: var(--accent-dark); }
-    .coeff { color: var(--gold); font-weight: 800; }
-    .coeff-select { min-height: 36px; padding: 6px 8px; color: var(--gold); font-weight: 800; }
-    .weighted { font-weight: 700; }
-    .empty { padding: 28px 14px; color: var(--muted); text-align: center; border-top: 1px solid var(--line); }
-    .side { display: grid; gap: 18px; align-content: start; }
-    .deduction-display { min-height: 42px; display: inline-flex; align-items: center; color: var(--warn); font-size: 1.25rem; font-weight: 800; }
-    .toast {
-      position: fixed;
-      left: 50%;
-      bottom: 18px;
-      transform: translateX(-50%) translateY(20px);
-      opacity: 0;
-      background: var(--ink);
-      color: var(--white);
-      padding: 10px 14px;
-      border-radius: 6px;
-      box-shadow: var(--shadow);
-      transition: opacity 0.18s ease, transform 0.18s ease;
-      z-index: 5;
+    .details-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
     }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    .use-counter {
+    .details-table th,
+    .details-table td {
+      padding: 8px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    .details-table th {
+      color: var(--muted);
+      background: #f4f1eb;
+      font-size: 0.78rem;
+    }
+
+    .details-table tr.collective-row {
+      background: #f9f6ef;
+    }
+
+    .details-table select {
+      min-height: 36px;
+      min-width: 72px;
+      padding: 4px 6px;
+    }
+
+    .clear-mark {
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+      color: var(--warn);
+      font-weight: 700;
+    }
+
+    .mobile-card-list {
+      display: none;
+    }
+
+    .movement-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 10px;
+      margin-bottom: 8px;
+    }
+
+    .movement-card header {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .movement-card .card-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .counter {
       position: fixed;
-      right: 6px;
-      bottom: 4px;
-      z-index: 1;
-      color: #f6f7f2;
-      font-size: 0.68rem;
+      right: 4px;
+      bottom: 2px;
+      color: var(--bg);
+      background: var(--bg);
+      font-size: 10px;
       line-height: 1;
       user-select: text;
     }
 
-    @media (max-width: 900px) {
-      header, main { grid-template-columns: 1fr; }
-      .status { justify-content: flex-start; }
-      .mark-grid { grid-template-columns: repeat(4, minmax(64px, 1fr)); }
-      .setup-grid { grid-template-columns: 1fr; }
+    .counter::selection {
+      color: #000;
+      background: #fff475;
     }
 
-    @media (max-width: 640px) {
-      .app { width: min(100% - 18px, 1180px); padding-top: 12px; }
-      .summary { grid-template-columns: 1fr; }
-      .list-head { display: none; }
-      .score-row { grid-template-columns: 42px 1fr 44px; gap: 8px; }
-      .movement, .score-value, .coeff, .weighted { grid-column: 2; }
-      .score-row .icon-btn { grid-row: 1 / span 4; grid-column: 3; }
+    @media (max-width: 780px) {
+      .app {
+        padding: 8px;
+      }
+
+      .ad-slot {
+        min-height: 58px;
+      }
+
+      .summary-sticky {
+        margin-left: -8px;
+        margin-right: -8px;
+        padding-left: 8px;
+        padding-right: 8px;
+      }
+
+      .setup-grid,
+      .deduction-row,
+      .action-row {
+        grid-template-columns: 1fr;
+      }
+
+      .summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .marks {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .details-table {
+        display: none;
+      }
+
+      .mobile-card-list {
+        display: block;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .summary {
+        gap: 6px;
+      }
+
+      .summary-item {
+        min-height: 62px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="app">
-    <header>
-      <div>
-        <h1>Dressage Score Tool</h1>
-        <p class="subhead">Choose the British Dressage test, then tap each mark. The tool loads the test total and expected coefficients automatically.</p>
-        <p class="credit">Created by Greg Dickens</p>
-      </div>
-      <div class="status" aria-live="polite">
-        <span class="pill" id="savedStatus">Saved locally</span>
-        <span class="pill" id="lastMark">Last mark: none</span>
-      </div>
-    </header>
+  <main class="app">
+    <div class="ad-slot" aria-label="Reserved advertising space">Reserved banner space</div>
 
-    <main>
-      <section>
-        <section class="entry primary setup-strip">
-          <div class="setup-grid">
-            <div class="field">
-              <label for="testSelect">Test being marked</label>
-              <select id="testSelect">
-                <option value="">Select a test</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="maxMarks">Test marks out of</label>
-              <input id="maxMarks" type="number" readonly placeholder="Auto">
-            </div>
-            <div class="score-stack">
-              <div class="score-strip" aria-label="Score summary">
-                <div class="score-tile">
-                  <span>Rolling percentage</span>
-                  <strong id="percentage">0.00%</strong>
-                </div>
-                <div class="score-tile">
-                  <span>Total marks</span>
-                  <strong id="totalMarks">0</strong>
-                </div>
-              </div>
-              <div class="row">
-                <div class="field">
-                  <label for="errorDeduction">Total marks to deduct for error of course</label>
-                  <input id="errorDeduction" type="number" min="0" step="0.5" placeholder="0">
-                </div>
-                <div class="field" style="max-width: 112px;">
-                  <label>Deduction</label>
-                  <div class="deduction-display" id="deductionDisplay">-0</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="progress-track" aria-label="Entered movement progress">
-            <div class="progress-fill" id="completionFill"></div>
-          </div>
-          <div class="completion-message" id="completionMessage">Select a test before starting.</div>
-        </section>
+    <div class="topline">
+      <h1>Dressage Score Tool</h1>
+      <span>Created by Greg Dickens</span>
+    </div>
 
-        <div class="toolbar" aria-label="Score entry">
-          <div class="row">
-            <div class="field">
-              <label for="movementName">Movement note</label>
-              <input id="movementName" type="text" placeholder="Optional">
-            </div>
-          </div>
+    <nav class="tabs" aria-label="Tool tabs">
+      <button class="tab-button" id="scoringTabButton" type="button" aria-selected="true">Scoring</button>
+      <button class="tab-button" id="detailsTabButton" type="button" aria-selected="false">Movement Details</button>
+    </nav>
 
-          <div class="mark-grid" id="markButtons"></div>
+    <section class="tab-panel active" id="scoringPanel">
+      <div class="surface">
+        <div class="guide" id="guideBox">
+          <span id="guideText">Select the test being marked.</span>
+          <small id="guideNote"></small>
+        </div>
 
-          <div class="actions">
-            <button class="icon-btn" id="undoBtn" type="button" data-tooltip="Clear last entered mark" aria-label="Clear last entered mark">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                <path d="M9 14 4 9l5-5"></path>
-                <path d="M4 9h10a6 6 0 1 1-5.3 8.8"></path>
-              </svg>
-            </button>
-            <button class="text-btn secondary" id="clearMovementBtn" type="button">Clear note</button>
-            <button class="text-btn secondary" id="clearScoresBtn" type="button">Clear scores</button>
-            <button class="text-btn danger" id="resetBtn" type="button">Reset test</button>
+        <div class="setup-grid">
+          <div id="testSelectorWrap">
+            <label for="testSelector">Test being marked</label>
+            <select id="testSelector">
+              <option value="">Select a BD test</option>
+            </select>
           </div>
         </div>
 
-        <div class="list" aria-label="Recorded marks">
-          <div class="list-head">
-            <span>No.</span>
-            <span>Movement</span>
-            <span>Mark</span>
-            <span>Coeff.</span>
-            <span>Total</span>
-            <span></span>
-          </div>
-          <div class="scores" id="scoreList"></div>
+        <div class="summary-sticky">
+          <section class="summary" aria-label="Live score summary">
+            <div class="summary-item"><span>Movement marks total</span><strong id="movementTotal">0.0</strong></div>
+            <div class="summary-item"><span>Collective marks total</span><strong id="collectiveTotal">0.0</strong></div>
+            <div class="summary-item"><span>Total awarded</span><strong id="awardedTotal">0.0</strong></div>
+            <div class="summary-item"><span>Errors deducted</span><strong id="errorsTotal">-0.0</strong></div>
+            <div class="summary-item"><span>Total to count</span><strong id="countTotal">0.0</strong></div>
+            <div class="summary-item"><span>Percentage</span><strong id="percentage">0.000%</strong></div>
+          </section>
         </div>
 
-      </section>
+        <div class="deduction-row">
+          <div>
+            <label for="deductionInput">Total marks to deduct for error of course</label>
+            <input id="deductionInput" type="number" inputmode="decimal" min="0" step="0.5" placeholder="0">
+          </div>
+          <div>
+            <label>Displayed deduction</label>
+            <input id="deductionDisplay" type="text" value="-0.0" readonly>
+          </div>
+        </div>
 
-    </main>
-  </div>
+        <div class="action-row">
+          <button class="secondary-button" id="undoButton" type="button">Undo</button>
+          <button class="secondary-button" id="clearScoresButton" type="button">Clear Scores</button>
+          <button class="danger-button" id="resetButton" type="button">Reset Test</button>
+        </div>
 
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <div class="use-counter" id="useCounter" aria-hidden="true">0</div>
+        <div class="progress-wrap">
+          <div class="progress-text">
+            <span id="progressLabel">No test selected</span>
+            <span id="progressCount">0 / 0</span>
+          </div>
+          <div class="progress-track" aria-hidden="true">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+        </div>
+
+        <div class="marks" id="markButtons" aria-label="Manual mark buttons"></div>
+        <div class="status" id="statusText" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="detailsPanel">
+      <div class="surface">
+        <table class="details-table">
+          <thead>
+            <tr>
+              <th>Movement</th>
+              <th>Awarded mark</th>
+              <th>Coefficient</th>
+              <th>Weighted mark</th>
+              <th>Coefficient selector</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="detailsBody"></tbody>
+        </table>
+        <div class="mobile-card-list" id="mobileDetails"></div>
+      </div>
+    </section>
+  </main>
+
+  <span class="counter" id="usageCounter" aria-hidden="true">0</span>
 
   <script>
-    const TESTS = [{"name":"Intro 1","total":220,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":2},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":2},{"number":15,"coefficient":2},{"number":16,"coefficient":2},{"number":17,"coefficient":2}]},{"name":"Intro 2","total":220,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":2},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":2},{"number":15,"coefficient":2},{"number":16,"coefficient":2},{"number":17,"coefficient":2}]},{"name":"Intro 3","total":220,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":2},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":2},{"number":15,"coefficient":2},{"number":16,"coefficient":2},{"number":17,"coefficient":2}]},{"name":"Intro 4","total":260,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":2},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":2},{"number":19,"coefficient":2},{"number":20,"coefficient":2},{"number":21,"coefficient":2}]},{"name":"Prelim 1","total":250,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":2},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":1},{"number":21,"coefficient":2},{"number":22,"coefficient":2}]},{"name":"Prelim 2","total":230,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":2},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":2},{"number":20,"coefficient":2}]},{"name":"Prelim 3","total":240,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":2},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":2},{"number":21,"coefficient":2}]},{"name":"Prelim 4","total":200,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":2},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":2},{"number":17,"coefficient":2}]},{"name":"Prelim 5","total":210,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":2},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":2},{"number":18,"coefficient":2}]},{"name":"Prelim 6","total":250,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":2},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":1},{"number":21,"coefficient":2},{"number":22,"coefficient":2}]},{"name":"Novice 1","total":250,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":2},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":1},{"number":21,"coefficient":2},{"number":22,"coefficient":2}]},{"name":"Novice 2","total":260,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":2},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":1},{"number":21,"coefficient":1},{"number":22,"coefficient":2},{"number":23,"coefficient":2}]},{"name":"Novice 3","total":250,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":2},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":1},{"number":21,"coefficient":2},{"number":22,"coefficient":2}]},{"name":"Novice 4","total":240,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":2},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":2},{"number":21,"coefficient":2}]},{"name":"Novice 5","total":300,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":2},{"number":21,"coefficient":1},{"number":22,"coefficient":1},{"number":23,"coefficient":1},{"number":24,"coefficient":1},{"number":25,"coefficient":1},{"number":26,"coefficient":2},{"number":27,"coefficient":2}]},{"name":"Novice 6","total":310,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":2},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":1},{"number":21,"coefficient":1},{"number":22,"coefficient":1},{"number":23,"coefficient":1},{"number":24,"coefficient":1},{"number":25,"coefficient":1},{"number":26,"coefficient":1},{"number":27,"coefficient":2},{"number":28,"coefficient":2}]},{"name":"Elementary 1","total":290,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":2},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":1},{"number":21,"coefficient":1},{"number":22,"coefficient":1},{"number":23,"coefficient":1},{"number":24,"coefficient":1},{"number":25,"coefficient":2},{"number":26,"coefficient":2}]},{"name":"Elementary 2","total":290,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":2},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":1},{"number":21,"coefficient":1},{"number":22,"coefficient":1},{"number":23,"coefficient":1},{"number":24,"coefficient":1},{"number":25,"coefficient":2},{"number":26,"coefficient":2}]},{"name":"Elementary 3","total":270,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":2},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":1},{"number":21,"coefficient":1},{"number":22,"coefficient":1},{"number":23,"coefficient":2},{"number":24,"coefficient":2}]},{"name":"Elementary 4","total":300,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":2},{"number":20,"coefficient":1},{"number":21,"coefficient":1},{"number":22,"coefficient":1},{"number":23,"coefficient":1},{"number":24,"coefficient":1},{"number":25,"coefficient":1},{"number":26,"coefficient":2},{"number":27,"coefficient":2}]},{"name":"Elementary 5","total":320,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":2},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":1},{"number":21,"coefficient":1},{"number":22,"coefficient":1},{"number":23,"coefficient":1},{"number":24,"coefficient":1},{"number":25,"coefficient":1},{"number":26,"coefficient":1},{"number":27,"coefficient":1},{"number":28,"coefficient":2},{"number":29,"coefficient":2}]},{"name":"Elementary 6","total":330,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":2},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":1},{"number":21,"coefficient":1},{"number":22,"coefficient":1},{"number":23,"coefficient":1},{"number":24,"coefficient":1},{"number":25,"coefficient":1},{"number":26,"coefficient":1},{"number":27,"coefficient":1},{"number":28,"coefficient":1},{"number":29,"coefficient":2},{"number":30,"coefficient":2}]},{"name":"Medium 1","total":290,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":2},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":1},{"number":21,"coefficient":1},{"number":22,"coefficient":1},{"number":23,"coefficient":1},{"number":24,"coefficient":1},{"number":25,"coefficient":2},{"number":26,"coefficient":2}]},{"name":"Medium 2","total":320,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":2},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":1},{"number":21,"coefficient":1},{"number":22,"coefficient":1},{"number":23,"coefficient":1},{"number":24,"coefficient":1},{"number":25,"coefficient":1},{"number":26,"coefficient":1},{"number":27,"coefficient":1},{"number":28,"coefficient":2},{"number":29,"coefficient":2}]},{"name":"Medium 3","total":290,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":2},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":1},{"number":21,"coefficient":1},{"number":22,"coefficient":1},{"number":23,"coefficient":1},{"number":24,"coefficient":1},{"number":25,"coefficient":2},{"number":26,"coefficient":2}]},{"name":"Medium 4","total":320,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":2},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":1},{"number":21,"coefficient":1},{"number":22,"coefficient":1},{"number":23,"coefficient":1},{"number":24,"coefficient":1},{"number":25,"coefficient":1},{"number":26,"coefficient":1},{"number":27,"coefficient":1},{"number":28,"coefficient":2},{"number":29,"coefficient":2}]},{"name":"Medium 5","total":300,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":2},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":1},{"number":21,"coefficient":1},{"number":22,"coefficient":1},{"number":23,"coefficient":1},{"number":24,"coefficient":1},{"number":25,"coefficient":1},{"number":26,"coefficient":2},{"number":27,"coefficient":2}]},{"name":"Medium 6","total":360,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":2},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":1},{"number":21,"coefficient":1},{"number":22,"coefficient":1},{"number":23,"coefficient":1},{"number":24,"coefficient":1},{"number":25,"coefficient":1},{"number":26,"coefficient":1},{"number":27,"coefficient":1},{"number":28,"coefficient":1},{"number":29,"coefficient":1},{"number":30,"coefficient":1},{"number":31,"coefficient":1},{"number":32,"coefficient":2},{"number":33,"coefficient":2}]},{"name":"Adv. Med. 1","total":290,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":2},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":1},{"number":21,"coefficient":1},{"number":22,"coefficient":1},{"number":23,"coefficient":1},{"number":24,"coefficient":1},{"number":25,"coefficient":2},{"number":26,"coefficient":2}]},{"name":"Adv. Med. 3","total":370,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":2},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":2},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":2},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":1},{"number":21,"coefficient":1},{"number":22,"coefficient":1},{"number":23,"coefficient":1},{"number":24,"coefficient":1},{"number":25,"coefficient":1},{"number":26,"coefficient":1},{"number":27,"coefficient":1},{"number":28,"coefficient":1},{"number":29,"coefficient":1},{"number":30,"coefficient":1},{"number":31,"coefficient":2},{"number":32,"coefficient":2}]},{"name":"Adv. Med. 4","total":380,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":2},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":2},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":2},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":1},{"number":21,"coefficient":1},{"number":22,"coefficient":1},{"number":23,"coefficient":1},{"number":24,"coefficient":1},{"number":25,"coefficient":1},{"number":26,"coefficient":1},{"number":27,"coefficient":1},{"number":28,"coefficient":1},{"number":29,"coefficient":1},{"number":30,"coefficient":1},{"number":31,"coefficient":1},{"number":32,"coefficient":2},{"number":33,"coefficient":2}]},{"name":"Adv. Med. 5","total":380,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":2},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":1},{"number":21,"coefficient":1},{"number":22,"coefficient":1},{"number":23,"coefficient":1},{"number":24,"coefficient":1},{"number":25,"coefficient":1},{"number":26,"coefficient":1},{"number":27,"coefficient":1},{"number":28,"coefficient":1},{"number":29,"coefficient":1},{"number":30,"coefficient":1},{"number":31,"coefficient":1},{"number":32,"coefficient":1},{"number":33,"coefficient":1},{"number":34,"coefficient":2},{"number":35,"coefficient":2}]},{"name":"Adv. Med. 6","total":360,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":2},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":1},{"number":21,"coefficient":1},{"number":22,"coefficient":1},{"number":23,"coefficient":1},{"number":24,"coefficient":1},{"number":25,"coefficient":1},{"number":26,"coefficient":1},{"number":27,"coefficient":1},{"number":28,"coefficient":1},{"number":29,"coefficient":1},{"number":30,"coefficient":1},{"number":31,"coefficient":1},{"number":32,"coefficient":2},{"number":33,"coefficient":2}]},{"name":"Advanced 1","total":320,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":1},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":1},{"number":8,"coefficient":1},{"number":9,"coefficient":1},{"number":10,"coefficient":1},{"number":11,"coefficient":1},{"number":12,"coefficient":2},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":1},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":1},{"number":20,"coefficient":1},{"number":21,"coefficient":1},{"number":22,"coefficient":1},{"number":23,"coefficient":1},{"number":24,"coefficient":1},{"number":25,"coefficient":1},{"number":26,"coefficient":1},{"number":27,"coefficient":1},{"number":28,"coefficient":2},{"number":29,"coefficient":2}]},{"name":"Advanced 2","total":360,"movements":[{"number":1,"coefficient":1},{"number":2,"coefficient":1},{"number":3,"coefficient":1},{"number":4,"coefficient":2},{"number":5,"coefficient":1},{"number":6,"coefficient":1},{"number":7,"coefficient":2},{"number":8,"coefficient":2},{"number":9,"coefficient":1},{"number":10,"coefficient":2},{"number":11,"coefficient":1},{"number":12,"coefficient":1},{"number":13,"coefficient":1},{"number":14,"coefficient":1},{"number":15,"coefficient":2},{"number":16,"coefficient":1},{"number":17,"coefficient":1},{"number":18,"coefficient":1},{"number":19,"coefficient":2},{"number":20,"coefficient":1},{"number":21,"coefficient":1},{"number":22,"coefficient":1},{"number":23,"coefficient":1},{"number":24,"coefficient":1},{"number":25,"coefficient":1},{"number":26,"coefficient":1},{"number":27,"coefficient":2},{"number":28,"coefficient":2}]}];
-    const DATA_VERSION = "bd-tests-2026-06-13-v2";
-    if (localStorage.getItem("dressageDataVersion") !== DATA_VERSION) {
-      localStorage.removeItem("dressageScores");
-      localStorage.removeItem("dressageErrorDeduction");
-      localStorage.setItem("dressageDataVersion", DATA_VERSION);
-    }
-    const marks = Array.from({ length: 21 }, (_, index) => index * 0.5);
-    const featured = new Set([5.5, 6, 6.5, 7, 7.5, 8]);
+    const DATA_VERSION = "bd-tests-2026-06-27-v2";
+    const STORAGE_KEY = "dressageScoreTool.v2.state";
+    const COUNTER_KEY = "dressageScoreTool.usageCount";
+    const MARK_VALUES = Array.from({ length: 21 }, (_, index) => index * 0.5);
+    const TESTS = [{"name":"Intro 1","totalMarks":220,"finalMovement":12,"coefficients":[1,1,1,1,1,1,1,2,1,1,1,1,1,2,2,2,2]},{"name":"Intro 2","totalMarks":220,"finalMovement":12,"coefficients":[1,1,1,1,2,1,1,1,1,1,1,1,1,2,2,2,2]},{"name":"Intro 3","totalMarks":220,"finalMovement":12,"coefficients":[1,1,1,1,1,1,1,1,1,2,1,1,1,2,2,2,2]},{"name":"Intro 4","totalMarks":260,"finalMovement":16,"coefficients":[1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,2,2,2,2]},{"name":"Prelim 1","totalMarks":250,"finalMovement":18,"coefficients":[1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,2,2]},{"name":"Prelim 2","totalMarks":230,"finalMovement":16,"coefficients":[1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,2,2]},{"name":"Prelim 3","totalMarks":240,"finalMovement":17,"coefficients":[1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,2,2]},{"name":"Prelim 4","totalMarks":200,"finalMovement":13,"coefficients":[1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,2,2]},{"name":"Prelim 5","totalMarks":210,"finalMovement":14,"coefficients":[1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,2,2]},{"name":"Prelim 6","totalMarks":250,"finalMovement":18,"coefficients":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,2,2]},{"name":"Novice 1","totalMarks":250,"finalMovement":18,"coefficients":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,2,2]},{"name":"Novice 2","totalMarks":260,"finalMovement":19,"coefficients":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,2,2]},{"name":"Novice 3","totalMarks":250,"finalMovement":18,"coefficients":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,2,2]},{"name":"Novice 4","totalMarks":240,"finalMovement":17,"coefficients":[1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,2,2]},{"name":"Novice 5","totalMarks":300,"finalMovement":23,"coefficients":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,2,2]},{"name":"Novice 6","totalMarks":310,"finalMovement":24,"coefficients":[1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2]},{"name":"Elementary 1","totalMarks":290,"finalMovement":22,"coefficients":[1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2]},{"name":"Elementary 2","totalMarks":290,"finalMovement":22,"coefficients":[1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2]},{"name":"Elementary 3","totalMarks":270,"finalMovement":20,"coefficients":[1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,2,2]},{"name":"Elementary 4","totalMarks":300,"finalMovement":23,"coefficients":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,2,2]},{"name":"Elementary 5","totalMarks":320,"finalMovement":25,"coefficients":[1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2]},{"name":"Elementary 6","totalMarks":330,"finalMovement":26,"coefficients":[1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2]},{"name":"Medium 1","totalMarks":290,"finalMovement":22,"coefficients":[1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,2,2]},{"name":"Medium 2","totalMarks":320,"finalMovement":25,"coefficients":[1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2]},{"name":"Medium 3","totalMarks":290,"finalMovement":22,"coefficients":[1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2]},{"name":"Medium 4","totalMarks":320,"finalMovement":25,"coefficients":[1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2]},{"name":"Medium 5","totalMarks":300,"finalMovement":23,"coefficients":[1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2]},{"name":"Medium 6","totalMarks":360,"finalMovement":29,"coefficients":[1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2]},{"name":"Adv. Med. 1","totalMarks":290,"finalMovement":22,"coefficients":[1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2]},{"name":"Adv. Med. 3","totalMarks":370,"finalMovement":28,"coefficients":[1,1,1,2,1,1,1,2,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2]},{"name":"Adv. Med. 4","totalMarks":380,"finalMovement":29,"coefficients":[1,1,1,1,2,1,1,1,1,1,2,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2]},{"name":"Adv. Med. 5","totalMarks":380,"finalMovement":31,"coefficients":[1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2]},{"name":"Adv. Med. 6","totalMarks":360,"finalMovement":29,"coefficients":[1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2]},{"name":"Advanced 1","totalMarks":320,"finalMovement":25,"coefficients":[1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2]},{"name":"Advanced 2","totalMarks":360,"finalMovement":24,"coefficients":[1,1,1,2,1,1,2,2,1,2,1,1,1,1,2,1,1,1,2,1,1,1,1,1,1,1,2,2]}];
+
     const state = {
-      selectedTest: localStorage.getItem("dressageSelectedTest") || "",
-      scores: JSON.parse(localStorage.getItem("dressageScores") || "[]"),
-      errorDeduction: Number(localStorage.getItem("dressageErrorDeduction") || "0"),
-      useCount: Number(localStorage.getItem("dressageUseCount") || "0")
+      selectedTest: "",
+      rows: [],
+      deductions: 0,
+      history: [],
+      countedThisSheet: false,
+      activeTab: "scoring"
     };
+    let selectedMarkIndex = MARK_VALUES.indexOf(7);
 
     const els = {
-      testSelect: document.getElementById("testSelect"),
-      markButtons: document.getElementById("markButtons"),
-      movementName: document.getElementById("movementName"),
-      scoreList: document.getElementById("scoreList"),
-      totalMarks: document.getElementById("totalMarks"),
+      testSelector: document.getElementById("testSelector"),
+      guideBox: document.getElementById("guideBox"),
+      guideText: document.getElementById("guideText"),
+      guideNote: document.getElementById("guideNote"),
+      testSelectorWrap: document.getElementById("testSelectorWrap"),
+      movementTotal: document.getElementById("movementTotal"),
+      collectiveTotal: document.getElementById("collectiveTotal"),
+      awardedTotal: document.getElementById("awardedTotal"),
+      errorsTotal: document.getElementById("errorsTotal"),
+      countTotal: document.getElementById("countTotal"),
       percentage: document.getElementById("percentage"),
-      maxMarks: document.getElementById("maxMarks"),
-      errorDeduction: document.getElementById("errorDeduction"),
+      deductionInput: document.getElementById("deductionInput"),
       deductionDisplay: document.getElementById("deductionDisplay"),
-      completionFill: document.getElementById("completionFill"),
-      completionMessage: document.getElementById("completionMessage"),
-      undoBtn: document.getElementById("undoBtn"),
-      clearScoresBtn: document.getElementById("clearScoresBtn"),
-      resetBtn: document.getElementById("resetBtn"),
-      clearMovementBtn: document.getElementById("clearMovementBtn"),
-      lastMark: document.getElementById("lastMark"),
-      savedStatus: document.getElementById("savedStatus"),
-      toast: document.getElementById("toast"),
-      useCounter: document.getElementById("useCounter")
+      undoButton: document.getElementById("undoButton"),
+      clearScoresButton: document.getElementById("clearScoresButton"),
+      resetButton: document.getElementById("resetButton"),
+      progressLabel: document.getElementById("progressLabel"),
+      progressCount: document.getElementById("progressCount"),
+      progressBar: document.getElementById("progressBar"),
+      markButtons: document.getElementById("markButtons"),
+      detailsBody: document.getElementById("detailsBody"),
+      mobileDetails: document.getElementById("mobileDetails"),
+      statusText: document.getElementById("statusText"),
+      usageCounter: document.getElementById("usageCounter"),
+      scoringTabButton: document.getElementById("scoringTabButton"),
+      detailsTabButton: document.getElementById("detailsTabButton"),
+      scoringPanel: document.getElementById("scoringPanel"),
+      detailsPanel: document.getElementById("detailsPanel")
     };
 
-    function currentTest() {
+    function getSelectedTest() {
       return TESTS.find((test) => test.name === state.selectedTest) || null;
     }
 
-    function makeRowsForTest(test) {
-      return test.movements.map((movement) => ({
-        number: movement.number,
-        expectedCoefficient: movement.coefficient,
-        coefficient: movement.coefficient,
+    function makeRows(test) {
+      return test.coefficients.map((coefficient, index) => ({
+        movement: index + 1,
         mark: null,
-        movement: ""
+        coefficient
       }));
     }
 
-    function normaliseScoresForTest() {
-      const test = currentTest();
-      if (!test) {
-        state.scores = [];
-        return;
+    function formatOne(value) {
+      return Number(value || 0).toFixed(1);
+    }
+
+    function formatMark(value) {
+      return value === null || value === undefined ? "" : Number(value).toFixed(value % 1 === 0 ? 0 : 1);
+    }
+
+    function loadUsageCounter() {
+      const count = Number(localStorage.getItem(COUNTER_KEY) || 0);
+      els.usageCounter.textContent = String(count);
+    }
+
+    function incrementUsageCounter() {
+      if (state.countedThisSheet) return;
+      const count = Number(localStorage.getItem(COUNTER_KEY) || 0) + 1;
+      localStorage.setItem(COUNTER_KEY, String(count));
+      state.countedThisSheet = true;
+      els.usageCounter.textContent = String(count);
+    }
+
+    function saveState() {
+      const saved = {
+        version: DATA_VERSION,
+        selectedTest: state.selectedTest,
+        rows: state.rows,
+        deductions: state.deductions,
+        history: state.history,
+        countedThisSheet: state.countedThisSheet,
+        activeTab: state.activeTab
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+    }
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+        if (!saved || saved.version !== DATA_VERSION) return;
+        const test = TESTS.find((item) => item.name === saved.selectedTest);
+        if (!test) return;
+        state.selectedTest = saved.selectedTest;
+        state.rows = makeRows(test).map((row, index) => {
+          const savedRow = saved.rows && saved.rows[index];
+          if (!savedRow || savedRow.movement !== row.movement || savedRow.coefficient !== row.coefficient) return row;
+          return { ...row, mark: validMark(savedRow.mark) ? Number(savedRow.mark) : null };
+        });
+        state.deductions = Math.max(0, Number(saved.deductions) || 0);
+        state.history = Array.isArray(saved.history) ? saved.history : [];
+        state.countedThisSheet = Boolean(saved.countedThisSheet);
+        state.activeTab = saved.activeTab === "details" ? "details" : "scoring";
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
       }
-      const rows = makeRowsForTest(test);
-      state.scores.forEach((score, index) => {
-        if (!rows[index] || !score) return;
-        const sameWorkbookRow = score.number === rows[index].number && score.expectedCoefficient === rows[index].expectedCoefficient;
-        if (!sameWorkbookRow) return;
-        rows[index] = {
-          ...rows[index],
-          coefficient: Number(score.coefficient || rows[index].expectedCoefficient),
-          mark: score.pending ? null : score.mark ?? null,
-          movement: score.movement || ""
-        };
-      });
-      state.scores = rows;
     }
 
-    function formatNumber(value, places = 2) {
-      const rounded = Number(value || 0).toFixed(places);
-      return rounded.replace(/\.00$/, "").replace(/(\.\d)0$/, "$1");
-    }
-
-    function scoreTotal(score) {
-      if (!score || score.mark === null || score.mark === undefined) return 0;
-      return Number(score.mark) * Number(score.coefficient);
-    }
-
-    function possibleFor(score) {
-      if (!score || score.mark === null || score.mark === undefined) return 0;
-      return 10 * Number(score.coefficient);
-    }
-
-    function totals() {
-      const test = currentTest();
-      const testPossible = test ? Number(test.total) : 0;
-      const deduction = Number(state.errorDeduction || 0);
-      const grossScored = state.scores.reduce((sum, score) => sum + scoreTotal(score), 0);
-      const scored = grossScored - deduction;
-      const enteredPossible = state.scores.reduce((sum, score) => sum + possibleFor(score), 0);
-      const completed = state.scores.filter((score) => score.mark !== null && score.mark !== undefined).length;
-      const expected = state.scores.length;
-      const rollingPercentage = enteredPossible > 0 ? (scored / enteredPossible) * 100 : 0;
-      const finalPercentage = testPossible > 0 ? (scored / testPossible) * 100 : 0;
-      const completion = expected > 0 ? Math.min((completed / expected) * 100, 100) : 0;
-      return { test, testPossible, scored, deduction, rollingPercentage, finalPercentage, completed, expected, completion };
-    }
-
-    function save() {
-      localStorage.setItem("dressageSelectedTest", state.selectedTest);
-      localStorage.setItem("dressageScores", JSON.stringify(state.scores));
-      localStorage.setItem("dressageErrorDeduction", String(state.errorDeduction || 0));
-      localStorage.setItem("dressageUseCount", String(state.useCount || 0));
-      els.savedStatus.textContent = "Saved locally";
-    }
-
-    function incrementUseCountIfNewSheet() {
-      const hasMarks = state.scores.some((score) => score.mark !== null && score.mark !== undefined);
-      if (hasMarks) return;
-      state.useCount += 1;
-    }
-
-    function showToast(message) {
-      els.toast.textContent = message;
-      els.toast.classList.add("show");
-      window.clearTimeout(showToast.timer);
-      showToast.timer = window.setTimeout(() => els.toast.classList.remove("show"), 1800);
+    function validMark(value) {
+      const number = Number(value);
+      return Number.isFinite(number) && number >= 0 && number <= 10 && Math.abs(number * 2 - Math.round(number * 2)) < 0.001;
     }
 
     function populateTests() {
@@ -556,209 +672,340 @@
         const option = document.createElement("option");
         option.value = test.name;
         option.textContent = test.name;
-        els.testSelect.appendChild(option);
+        els.testSelector.append(option);
       });
-      els.testSelect.value = state.selectedTest;
     }
 
-    function renderButtons() {
-      els.markButtons.innerHTML = "";
-      marks.forEach((mark) => {
+    function buildMarkButtons() {
+      MARK_VALUES.forEach((value, index) => {
         const button = document.createElement("button");
         button.type = "button";
-        button.className = `mark-btn${featured.has(mark) ? " featured" : ""}`;
-        button.textContent = formatNumber(mark, 1);
-        button.addEventListener("click", () => addScore(mark));
-        els.markButtons.appendChild(button);
+        button.className = `mark-button ${value < 4 || value > 8 ? "compact" : "common"}`;
+        button.textContent = formatMark(value);
+        button.dataset.markIndex = String(index);
+        button.setAttribute("aria-label", `Enter mark ${formatMark(value)}`);
+        button.addEventListener("click", () => addMark(value, "manual"));
+        els.markButtons.append(button);
       });
-    }
-
-    function nextOpenIndex() {
-      return state.scores.findIndex((score) => score.mark === null || score.mark === undefined);
-    }
-
-    function renderScores() {
-      els.scoreList.innerHTML = "";
-      if (!currentTest()) {
-        const empty = document.createElement("div");
-        empty.className = "empty";
-        empty.textContent = "Select a test to load its movements.";
-        els.scoreList.appendChild(empty);
-        return;
-      }
-
-      const currentIndex = nextOpenIndex();
-      state.scores.forEach((score, index) => {
-        const isEmpty = score.mark === null || score.mark === undefined;
-        const row = document.createElement("div");
-        row.className = `score-row${isEmpty ? " pending" : ""}${index === currentIndex ? " current" : ""}`;
-
-        const number = document.createElement("span");
-        number.className = "score-number";
-        number.textContent = score.number;
-
-        const movement = document.createElement("div");
-        movement.className = "movement";
-        movement.textContent = score.movement || `Movement ${score.number}`;
-
-        const mark = document.createElement("div");
-        mark.className = "score-value";
-        mark.textContent = isEmpty ? "-" : formatNumber(score.mark, 1);
-
-        const coeff = document.createElement("div");
-        coeff.className = "coeff";
-        const coeffSelect = document.createElement("select");
-        coeffSelect.className = "coeff-select";
-        coeffSelect.setAttribute("aria-label", `Coefficient for movement ${score.number}`);
-        [1, 2, 3].forEach((value) => {
-          const option = document.createElement("option");
-          option.value = String(value);
-          option.textContent = `x${value}`;
-          coeffSelect.appendChild(option);
-        });
-        coeffSelect.value = String(score.coefficient || score.expectedCoefficient || 1);
-        coeffSelect.addEventListener("change", () => {
-          state.scores[index].coefficient = Number(coeffSelect.value);
-          showToast(`Movement ${score.number} coefficient set to x${coeffSelect.value}`);
-          render();
-        });
-        coeff.appendChild(coeffSelect);
-
-        const weighted = document.createElement("div");
-        weighted.className = "weighted";
-        weighted.textContent = isEmpty ? "Awaiting mark" : formatNumber(scoreTotal(score), 1);
-
-        const remove = document.createElement("button");
-        remove.type = "button";
-        remove.className = "icon-btn";
-        remove.setAttribute("aria-label", `Clear movement ${score.number}`);
-        remove.setAttribute("data-tooltip", "Clear mark");
-        remove.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="m19 6-1 14H6L5 6"></path><path d="M10 11v5"></path><path d="M14 11v5"></path></svg>';
-        remove.addEventListener("click", () => {
-          state.scores[index].mark = null;
-          state.scores[index].movement = "";
-          showToast(`Movement ${score.number} will be replaced by the next mark`);
-          render();
-        });
-
-        row.append(number, movement, mark, coeff, weighted, remove);
-        els.scoreList.appendChild(row);
-      });
-    }
-
-    function renderSummary() {
-      const data = totals();
-      els.testSelect.classList.toggle("needs-value", !data.test);
-      els.maxMarks.classList.toggle("needs-value", !data.test);
-      els.maxMarks.value = data.test ? data.test.total : "";
-      els.totalMarks.textContent = formatNumber(data.scored, 1);
-      els.deductionDisplay.textContent = data.deduction ? `-${formatNumber(data.deduction, 1)}` : "-0";
-      els.percentage.textContent = `${data.rollingPercentage.toFixed(2)}%`;
-      els.completionFill.style.width = `${data.completion}%`;
-      els.markButtons.querySelectorAll("button").forEach((button) => {
-        button.disabled = !data.test;
-      });
-      els.completionMessage.className = "completion-message";
-      if (!data.test) {
-        els.completionMessage.textContent = "Select a test before starting.";
-      } else if (data.completed < data.expected) {
-        els.completionMessage.textContent = `${data.expected - data.completed} movements still to enter. Final so far: ${data.finalPercentage.toFixed(2)}%.`;
-      } else {
-        els.completionMessage.classList.add("ready");
-        els.completionMessage.textContent = `All movements entered. Final percentage: ${data.finalPercentage.toFixed(2)}%.`;
-      }
-      const lastScore = [...state.scores].reverse().find((score) => score && score.mark !== null && score.mark !== undefined);
-      els.lastMark.textContent = lastScore ? `Last mark: ${formatNumber(lastScore.mark, 1)}` : "Last mark: none";
-      els.useCounter.textContent = String(state.useCount || 0);
-    }
-
-    function render() {
-      renderScores();
-      renderSummary();
-      save();
-    }
-
-    function addScore(mark) {
-      if (!currentTest()) {
-        els.testSelect.focus();
-        showToast("Select a test first");
-        return;
-      }
-      const index = nextOpenIndex();
-      if (index < 0) {
-        showToast("All movements already have marks");
-        return;
-      }
-      incrementUseCountIfNewSheet();
-      const movement = els.movementName.value.trim();
-      state.scores[index].mark = mark;
-      if (movement) state.scores[index].movement = movement;
-      els.movementName.value = "";
-      render();
-    }
-
-    function clearScores(announce = true) {
-      const test = currentTest();
-      state.scores = test ? makeRowsForTest(test) : [];
-      state.errorDeduction = 0;
-      els.errorDeduction.value = "";
-      els.movementName.value = "";
-      if (announce) showToast("Scores cleared");
-      render();
+      updateSelectedMarkButton();
     }
 
     function selectTest(name) {
-      state.selectedTest = name;
-      state.errorDeduction = 0;
-      els.errorDeduction.value = "";
-      const test = currentTest();
-      state.scores = test ? makeRowsForTest(test) : [];
-      showToast(name ? `${name} loaded` : "Test cleared");
+      const test = TESTS.find((item) => item.name === name);
+      state.selectedTest = test ? test.name : "";
+      state.rows = test ? makeRows(test) : [];
+      state.deductions = 0;
+      state.history = [];
+      state.countedThisSheet = false;
       render();
+      saveState();
     }
 
-    els.errorDeduction.value = state.errorDeduction || "";
+    function nextEmptyIndex() {
+      return state.rows.findIndex((row) => row.mark === null || row.mark === undefined);
+    }
 
-    els.testSelect.addEventListener("change", () => selectTest(els.testSelect.value));
-    els.errorDeduction.addEventListener("input", () => {
-      state.errorDeduction = Number(els.errorDeduction.value || 0);
+    function addMark(value, source) {
+      if (!validMark(value)) return false;
+      const test = getSelectedTest();
+      if (!test) {
+        setStatus("Select a test before entering marks.");
+        return false;
+      }
+      const index = nextEmptyIndex();
+      if (index < 0) {
+        setStatus("All movement rows are already filled.");
+        return false;
+      }
+      incrementUsageCounter();
+      state.rows[index].mark = Number(value);
+      state.history.push({ index, previousMark: null, source });
+      setStatus(`Movement ${index + 1}: ${formatMark(value)}`);
       render();
-    });
+      saveState();
+      return true;
+    }
 
-    els.undoBtn.addEventListener("click", () => {
-      for (let index = state.scores.length - 1; index >= 0; index -= 1) {
-        if (state.scores[index].mark !== null && state.scores[index].mark !== undefined) {
-          state.scores[index].mark = null;
-          state.scores[index].movement = "";
-          render();
-          return;
-        }
+    function updateSelectedMarkButton() {
+      els.markButtons.querySelectorAll(".mark-button").forEach((button) => {
+        const selected = Number(button.dataset.markIndex) === selectedMarkIndex;
+        button.classList.toggle("selected", selected);
+        button.setAttribute("aria-current", selected ? "true" : "false");
+      });
+    }
+
+    function scrollSelectedMarkIntoView() {
+      const selectedButton = els.markButtons.querySelector(".mark-button.selected");
+      if (!selectedButton) return;
+      const buttonRect = selectedButton.getBoundingClientRect();
+      const summaryRect = document.querySelector(".summary-sticky").getBoundingClientRect();
+      const topLimit = Math.max(0, summaryRect.bottom) + 10;
+      const bottomLimit = window.innerHeight - 14;
+
+      if (buttonRect.top < topLimit) {
+        window.scrollBy({ top: buttonRect.top - topLimit, behavior: "smooth" });
+      } else if (buttonRect.bottom > bottomLimit) {
+        window.scrollBy({ top: buttonRect.bottom - bottomLimit, behavior: "smooth" });
       }
-    });
+    }
 
-    els.clearScoresBtn.addEventListener("click", () => clearScores(true));
+    function moveSelectedMark(direction) {
+      selectedMarkIndex = Math.min(MARK_VALUES.length - 1, Math.max(0, selectedMarkIndex + direction));
+      updateSelectedMarkButton();
+      scrollSelectedMarkIntoView();
+      setStatus(`Selected score ${formatMark(MARK_VALUES[selectedMarkIndex])}. Press Enter to log it.`);
+    }
 
-    els.resetBtn.addEventListener("click", () => {
-      if (!state.selectedTest && !state.scores.length && !state.errorDeduction) return;
-      if (confirm("Clear this whole test setup and all scores?")) {
-        state.selectedTest = "";
-        state.scores = [];
-        state.errorDeduction = 0;
-        els.testSelect.value = "";
-        els.errorDeduction.value = "";
-        els.movementName.value = "";
+    function handleScoreKeyboard(event) {
+      if (state.activeTab !== "scoring") return;
+      const tag = event.target.tagName;
+      if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        moveSelectedMark(-1);
+      } else if (event.key === "ArrowDown") {
+        event.preventDefault();
+        moveSelectedMark(1);
+      } else if (event.key === "Enter") {
+        event.preventDefault();
+        addMark(MARK_VALUES[selectedMarkIndex], "keyboard");
+      }
+    }
+
+    function undoLast() {
+      const last = state.history.pop();
+      if (!last || !state.rows[last.index]) {
+        setStatus("Nothing to undo.");
         render();
+        saveState();
+        return;
       }
-    });
+      state.rows[last.index].mark = last.previousMark;
+      setStatus(`Undid movement ${last.index + 1}.`);
+      render();
+      saveState();
+    }
 
-    els.clearMovementBtn.addEventListener("click", () => {
-      els.movementName.value = "";
-      els.movementName.focus();
-    });
+    function clearMark(index) {
+      if (!state.rows[index]) return;
+      state.rows[index].mark = null;
+      state.history = state.history.filter((item) => item.index !== index);
+      setStatus(`Movement ${index + 1} cleared.`);
+      render();
+      saveState();
+    }
+
+    function changeCoefficient(index, coefficient) {
+      if (!state.rows[index]) return;
+      state.rows[index].coefficient = Number(coefficient);
+      render();
+      saveState();
+    }
+
+    function clearScores() {
+      state.rows.forEach((row) => {
+        row.mark = null;
+      });
+      state.deductions = 0;
+      state.history = [];
+      state.countedThisSheet = false;
+      setStatus("Scores cleared.");
+      render();
+      saveState();
+    }
+
+    function resetTest() {
+      if (!confirm("Reset the selected test and clear all scores?")) return;
+      state.selectedTest = "";
+      state.rows = [];
+      state.deductions = 0;
+      state.history = [];
+      state.countedThisSheet = false;
+      setStatus("Test reset.");
+      render();
+      saveState();
+    }
+
+    function totals() {
+      const test = getSelectedTest();
+      let movement = 0;
+      let collective = 0;
+      state.rows.forEach((row, index) => {
+        if (row.mark === null || row.mark === undefined) return;
+        const weighted = Number(row.mark) * Number(row.coefficient);
+        if (test && index + 1 <= test.finalMovement) movement += weighted;
+        else collective += weighted;
+      });
+      const awarded = movement + collective;
+      const deductions = Math.max(0, Number(state.deductions) || 0);
+      const count = awarded - deductions;
+      const percentage = test && test.totalMarks ? (count / test.totalMarks) * 100 : 0;
+      return { movement, collective, awarded, deductions, count, percentage };
+    }
+
+    function renderGuide() {
+      els.testSelectorWrap.classList.remove("highlight");
+
+      if (!state.selectedTest) {
+        els.guideBox.style.display = "";
+        els.guideText.textContent = "Select the test being marked.";
+        els.guideNote.textContent = "";
+        els.testSelectorWrap.classList.add("highlight");
+        return;
+      }
+
+      if (state.rows.every((row) => row.mark === null || row.mark === undefined)) {
+        els.guideBox.style.display = "";
+        els.guideText.textContent = "Enter each mark using the buttons below.";
+        els.guideNote.textContent = "Marks fill the next empty movement in order.";
+        return;
+      }
+
+      els.guideBox.style.display = "none";
+    }
+
+    function renderSummary() {
+      const total = totals();
+      els.movementTotal.textContent = formatOne(total.movement);
+      els.collectiveTotal.textContent = formatOne(total.collective);
+      els.awardedTotal.textContent = formatOne(total.awarded);
+      els.errorsTotal.textContent = `-${formatOne(total.deductions)}`;
+      els.countTotal.textContent = formatOne(total.count);
+      els.percentage.textContent = `${total.percentage.toFixed(3)}%`;
+      els.deductionInput.value = state.deductions ? state.deductions : "";
+      els.deductionDisplay.value = `-${formatOne(total.deductions)}`;
+    }
+
+    function renderProgress() {
+      const test = getSelectedTest();
+      const completed = state.rows.filter((row) => row.mark !== null && row.mark !== undefined).length;
+      const total = state.rows.length;
+      const remaining = total - completed;
+      els.progressCount.textContent = `${completed} / ${total}`;
+      els.progressBar.style.width = total ? `${(completed / total) * 100}%` : "0%";
+      if (!test) {
+        els.progressLabel.textContent = "No test selected";
+      } else if (remaining === 0) {
+        els.progressLabel.textContent = "All marks entered";
+      } else {
+        els.progressLabel.textContent = `${remaining} marks remaining`;
+      }
+    }
+
+    function coefficientSelect(index, value) {
+      const select = document.createElement("select");
+      [1, 2, 3].forEach((coefficient) => {
+        const option = document.createElement("option");
+        option.value = String(coefficient);
+        option.textContent = `x${coefficient}`;
+        if (coefficient === Number(value)) option.selected = true;
+        select.append(option);
+      });
+      select.addEventListener("change", () => changeCoefficient(index, select.value));
+      return select;
+    }
+
+    function renderDetails() {
+      const test = getSelectedTest();
+      els.detailsBody.innerHTML = "";
+      els.mobileDetails.innerHTML = "";
+
+      state.rows.forEach((row, index) => {
+        const weighted = row.mark === null || row.mark === undefined ? "" : formatOne(row.mark * row.coefficient);
+        const type = test && index + 1 > test.finalMovement ? "Collective" : "Movement";
+
+        const tr = document.createElement("tr");
+        if (type === "Collective") tr.className = "collective-row";
+        tr.innerHTML = `
+          <td>${type} ${row.movement}</td>
+          <td>${formatMark(row.mark)}</td>
+          <td>x${row.coefficient}</td>
+          <td>${weighted}</td>
+          <td></td>
+          <td><button class="clear-mark" type="button">Clear</button></td>
+        `;
+        tr.children[4].append(coefficientSelect(index, row.coefficient));
+        tr.querySelector("button").addEventListener("click", () => clearMark(index));
+        els.detailsBody.append(tr);
+
+        const card = document.createElement("div");
+        card.className = "movement-card";
+        card.innerHTML = `
+          <header><span>${type} ${row.movement}</span><span>${weighted || "0.0"}</span></header>
+          <div class="card-grid">
+            <div><label>Awarded mark</label><input value="${formatMark(row.mark)}" readonly></div>
+            <div><label>Coefficient</label></div>
+            <div><label>Weighted mark</label><input value="${weighted}" readonly></div>
+            <button class="clear-mark" type="button">Clear</button>
+          </div>
+        `;
+        card.querySelector(".card-grid div:nth-child(2)").append(coefficientSelect(index, row.coefficient));
+        card.querySelector("button").addEventListener("click", () => clearMark(index));
+        els.mobileDetails.append(card);
+      });
+    }
+
+    function renderTabs() {
+      const details = state.activeTab === "details";
+      els.scoringTabButton.setAttribute("aria-selected", String(!details));
+      els.detailsTabButton.setAttribute("aria-selected", String(details));
+      els.scoringPanel.classList.toggle("active", !details);
+      els.detailsPanel.classList.toggle("active", details);
+    }
+
+    function render() {
+      els.testSelector.value = state.selectedTest;
+      renderTabs();
+      renderGuide();
+      renderSummary();
+      renderProgress();
+      renderDetails();
+      updateSelectedMarkButton();
+      els.undoButton.disabled = state.history.length === 0;
+    }
+
+    function setStatus(message) {
+      els.statusText.textContent = message;
+      els.statusText.classList.remove("error");
+    }
+
+    function setTab(tab) {
+      state.activeTab = tab;
+      render();
+      saveState();
+    }
+
+    function wireEvents() {
+      els.testSelector.addEventListener("change", () => selectTest(els.testSelector.value));
+      els.undoButton.addEventListener("click", undoLast);
+      els.clearScoresButton.addEventListener("click", clearScores);
+      els.resetButton.addEventListener("click", resetTest);
+      els.scoringTabButton.addEventListener("click", () => setTab("scoring"));
+      els.detailsTabButton.addEventListener("click", () => setTab("details"));
+      document.addEventListener("keydown", handleScoreKeyboard);
+      els.deductionInput.addEventListener("input", () => {
+        state.deductions = Math.max(0, Number(els.deductionInput.value) || 0);
+        render();
+        saveState();
+      });
+    }
+
+    function validateData() {
+      const problems = TESTS.filter((test) => {
+        const total = test.coefficients.reduce((sum, coefficient) => sum + coefficient * 10, 0);
+        return total !== test.totalMarks || test.finalMovement > test.coefficients.length;
+      });
+      if (problems.length) {
+        setStatus(`Workbook data check failed for ${problems.map((item) => item.name).join(", ")}.`);
+      }
+    }
 
     populateTests();
-    normaliseScoresForTest();
-    renderButtons();
+    buildMarkButtons();
+    loadUsageCounter();
+    loadState();
+    wireEvents();
+    validateData();
     render();
   </script>
 </body>
